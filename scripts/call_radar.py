@@ -99,8 +99,8 @@ def main():
                 print(json.dumps(result, ensure_ascii=False))
             else:
                 # 系统返回成品 markdown + 源数据 xlsx,本脚本同时落盘,文件名都带 trace_id
-                # 固定存到 ~/.radar/reports/(不随工作目录漂,换设备/重装一致)
-                out_dir = os.path.expanduser('~/.radar/reports')
+                # 存到 skill 文件夹/reports/(用户好找;不随工作目录漂,换设备/重装一致)
+                out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'reports')
                 os.makedirs(out_dir, exist_ok=True)
                 meta = result.get('_meta', {})
                 trace_id = result.get('trace_id') or meta.get('trace_id') or 'no-id'
