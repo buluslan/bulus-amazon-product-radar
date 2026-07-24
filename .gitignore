@@ -21,5 +21,6 @@ __pycache__/
 
 # 用户配置 + 产物(install 写入 / 报告 / 归档临时对话)
 .env
+!.env.example
 reports/
 .conversation-*.md

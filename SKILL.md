@@ -32,9 +32,9 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 
 **先检测连接(进对话前)**:读 skill 文件夹下的 `.env`(看 `RADAR_ENDPOINT` + `RADAR_API_KEY` 在不在):
 - 都在 → 直接进步骤 1 问品类。
-- 缺失 → 告诉用户:"本地还没连上服务,跑这条装好(里面要填你的 key,找管理员 buluslan 要):
-  `curl -sSL http://106.55.230.27:8000/install.sh | bash -s -- --api-key=<你的key>`
-  装完告诉我,我们继续。"——**不要让用户把 key 直接发在对话里**(敏感,会进对话历史)。
+- 缺失 → 引导用户配置(**两个选择,都别让用户把 key 发在对话里**——key 敏感会进历史):
+  - **手动**(推荐,透明):让用户在 skill 文件夹下 `cp .env.example .env`,用编辑器打开 `.env` 填 `RADAR_API_KEY`(endpoint 已预填)。填完存盘告诉你继续。
+  - **一键**:让用户在自己终端跑 `curl -sSL http://106.55.230.27:8000/install.sh | bash -s -- --api-key=<key>`(key 找管理员 buluslan 要;命令在用户终端跑,不发对话)。
 
 > 连接配置优先级:环境变量 `RADAR_ENDPOINT` / `RADAR_API_KEY` > skill 文件夹/`.env`(install 写入)> 内置默认。详见 README。
 
