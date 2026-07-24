@@ -92,27 +92,24 @@
 
 ### 步骤(Agent 执行)
 
-**1. 下载技能到你 Agent 的技能目录**(目录名必须是 `bulus-amazon-product-radar`,否则识别不到):
+**方式 A · 一键安装**(推荐,自动 clone + 配置 .codex/.agents 软链):
 
 ```bash
-# Claude Code
+curl -sSL http://106.55.230.27:8000/install.sh | bash -s -- --api-key=<你的key>
+```
+
+**方式 B · 手动**(透明,自己填 key):
+
+```bash
+# 1. clone 到你 Agent 的技能目录(目录名必须是 bulus-amazon-product-radar)
 git clone https://github.com/buluslan/bulus-amazon-product-radar.git ~/.claude/skills/bulus-amazon-product-radar
-# Codex
-git clone https://github.com/buluslan/bulus-amazon-product-radar.git ~/.codex/skills/bulus-amazon-product-radar
-# 其他 Agent(OpenCode 等):clone 到你 Agent 对应的 skills 目录,目录名保持 bulus-amazon-product-radar
+# 2. 复制配置模板 + 填 key
+cd ~/.claude/skills/bulus-amazon-product-radar
+cp .env.example .env
+# 编辑 .env,在 RADAR_API_KEY= 后填你的 key(endpoint 已预填)
 ```
 
-**2. 写入 key 和服务地址**:
-
-```bash
-cat > ~/.claude/skills/bulus-amazon-product-radar/.env << EOF
-RADAR_ENDPOINT=<我们给你的服务地址>
-RADAR_API_KEY=<你的 API key>
-EOF
-chmod 600 ~/.claude/skills/bulus-amazon-product-radar/.env
-```
-
-**3. 重启 Agent**(或开新会话),技能才会加载。
+**重启 Agent**(或开新会话),技能才会加载。
 
 ---
 
