@@ -105,14 +105,11 @@ git clone https://github.com/buluslan/bulus-amazon-product-radar.git ~/.codex/sk
 **2. 写入 key 和服务地址**:
 
 ```bash
-mkdir -p ~/.radar
-cat > ~/.radar/config.json << EOF
-{
-  "api_key": "<你的 API key>",
-  "cloud_endpoint": "<我们给你的服务地址>"
-}
+cat > ~/.claude/skills/bulus-amazon-product-radar/.env << EOF
+RADAR_ENDPOINT=<我们给你的服务地址>
+RADAR_API_KEY=<你的 API key>
 EOF
-chmod 600 ~/.radar/config.json
+chmod 600 ~/.claude/skills/bulus-amazon-product-radar/.env
 ```
 
 **3. 重启 Agent**(或开新会话),技能才会加载。
@@ -131,7 +128,7 @@ chmod 600 ~/.radar/config.json
 
 ## 常见问题
 
-- **连不上 / 报错** → 检查 key 和服务地址对不对(在 `~/.radar/config.json`)
+- **连不上 / 报错** → 检查 key 和服务地址对不对(在 skill 文件夹下 `.env`)
 - **key 无效或次数用完** → 联系我们
 - **找不到这个技能** → 确认装到了你 Agent 的技能目录(如 `~/.claude/skills/bulus-amazon-product-radar` 或 `~/.codex/skills/bulus-amazon-product-radar`),目录名必须是 `bulus-amazon-product-radar`,并重启 Agent
 

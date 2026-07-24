@@ -18,3 +18,8 @@ __pycache__/
 .run_output/
 选品雷达报告/
 .sorftime_cache/
+
+# 用户配置 + 产物(install 写入 / 报告 / 归档临时对话)
+.env
+reports/
+.conversation-*.md

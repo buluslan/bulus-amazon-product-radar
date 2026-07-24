@@ -11,7 +11,7 @@
 
 配置(优先级,同 call_radar.py):
   环境变量 RADAR_ENDPOINT / RADAR_API_KEY            临时覆盖
-  ~/.radar/config.json 里的连接地址和 key            部署时写入(默认)
+  skill 文件夹/.env 里的连接地址和 key               install.sh 写入(默认)
   内置默认
 
 成功打印归档编号;失败退出码 1。不编造结果。
@@ -35,27 +35,38 @@ DEFAULT_BASE = 'http://127.0.0.1:8000'
 TIMEOUT = 60  # 归档包小,60s 足够(远小于 full_judge 的 480s)
 
 
-def _read_config():
-    """读 ~/.radar/config.json(部署时写入的连接地址和 key)。失败返回 {}。"""
-    path = os.path.expanduser('~/.radar/config.json')
+def _skill_root():
+    """skill 根目录(scripts 的父)。.env / reports 都在这。"""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _read_env():
+    """读 skill 根/.env(RADAR_ENDPOINT / RADAR_API_KEY)。失败返回 {}。纯标准库 parse。"""
+    path = os.path.join(_skill_root(), '.env')
+    env = {}
     try:
         with open(path, encoding='utf-8') as f:
-            return json.load(f)
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    env[k.strip()] = v.strip().strip('"').strip("'")
     except Exception:
-        return {}
+        pass
+    return env
 
 
 def _get_endpoint():
-    """连接地址 = 环境变量 > 配置文件 > 默认;自动补全归档接口路径。"""
-    cfg = _read_config()
-    base = (os.environ.get('RADAR_ENDPOINT') or cfg.get('cloud_endpoint') or DEFAULT_BASE).rstrip('/')
+    """连接地址 = 环境变量 > skill/.env > 默认;自动补全归档接口路径。"""
+    env = _read_env()
+    base = (os.environ.get('RADAR_ENDPOINT') or env.get('RADAR_ENDPOINT') or DEFAULT_BASE).rstrip('/')
     return base if '/archive' in base else base + ARCHIVE_PATH
 
 
 def _get_api_key():
-    """api key = 环境变量 > 配置文件 > 默认。"""
-    cfg = _read_config()
-    return os.environ.get('RADAR_API_KEY') or cfg.get('api_key') or 'your-api-key'
+    """api key = 环境变量 > skill/.env > 默认。"""
+    env = _read_env()
+    return os.environ.get('RADAR_API_KEY') or env.get('RADAR_API_KEY') or 'your-api-key'
 
 
 def _read_shell_version():
