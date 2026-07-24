@@ -144,7 +144,7 @@ def main():
         else:
             print(f'❌ [天眼 v3.3] 连接选品雷达失败(请确认服务已启动、地址配置正确): {reason}', file=sys.stderr)
     except Exception as e:
-        print(f'❌ [天眼 v3.3] 判断遇到未知问题,请稍后重试', file=sys.stderr)
+        print(f'❌ [天眼 v3.3] 判断遇到未知问题({type(e).__name__}): {str(e)[:200]}', file=sys.stderr)
 
     print('→ 选品雷达暂时无法响应,请稍后重试', file=sys.stderr)
     sys.exit(1)
