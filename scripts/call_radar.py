@@ -75,6 +75,30 @@ ENDPOINT = quote(_get_endpoint(), safe=':/?=&%+@')  # 编码中文路径,保留 
 API_KEY = _get_api_key()
 
 
+def _save_profile(payload):
+    """提交后把卖家画像落盘到 .flow_state/seller_profile.json(下次调用先读它,治"每次重填画像")。
+    只存 profile + budget_cny + user_overrides(品类 target 每次不同,不缓存)。fail-soft,不影响主流程。"""
+    try:
+        from datetime import datetime
+        p = payload.get('profile') or {}
+        prof = {
+            'experience': p.get('experience', ''),
+            'category_relation': p.get('category_relation', ''),
+            'capital': p.get('capital', ''),
+            'budget_cny': payload.get('budget_cny', 0),
+            'supply_chain': p.get('supply_chain', ''),
+            'business_model': p.get('business_model', ''),
+            'user_overrides': payload.get('user_overrides', {}),
+            'ts': datetime.now().isoformat(timespec='seconds'),
+        }
+        flow_dir = os.path.join(_skill_root(), '.flow_state')
+        os.makedirs(flow_dir, exist_ok=True)
+        with open(os.path.join(flow_dir, 'seller_profile.json'), 'w', encoding='utf-8') as f:
+            json.dump(prof, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass   # 画像缓存是锦上添花,失败不阻塞报告交付
+
+
 def main():
     if len(sys.argv) < 2:
         print('[天眼 v3.3] 用法: python3 scripts/call_radar.py <payload.json>', file=sys.stderr)
@@ -109,17 +133,16 @@ def main():
                 # 无 report_markdown 时输出 JSON(兼容场景)
                 print(json.dumps(result, ensure_ascii=False))
             else:
-                # 系统返回成品 markdown + 源数据 xlsx,本脚本同时落盘,文件名都带 trace_id
-                # 存到 skill 文件夹/reports/(用户好找;不随工作目录漂,换设备/重装一致)
-                out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'reports')
-                os.makedirs(out_dir, exist_ok=True)
+                # 按 trace 建子文件夹:报告+数据同文件夹下发,文件名统一(治"md/xlsx 平铺且前缀不一难找")
+                reports_root = os.path.join(_skill_root(), 'reports')
                 meta = result.get('_meta', {})
                 trace_id = result.get('trace_id') or meta.get('trace_id') or 'no-id'
                 cat = (payload.get('target') or {}).get('categoryName', '选品')
                 site = (payload.get('target') or {}).get('site', '')
                 safe_cat = re.sub(r'[\\/:*?"<>|\s]', '', str(cat))[:20] or '选品'
-                base_name = f"选品分析报告-{safe_cat}{site}站-{trace_id}"
-                md_path = os.path.join(out_dir, base_name + '.md')
+                sub_dir = os.path.join(reports_root, f"{safe_cat}{site}站-{trace_id}")
+                os.makedirs(sub_dir, exist_ok=True)
+                md_path = os.path.join(sub_dir, '选品报告.md')
                 with open(md_path, 'w', encoding='utf-8') as f:
                     f.write(md)
                 print(md)  # 打印报告 markdown
@@ -127,14 +150,15 @@ def main():
                 xlsx_b64 = result.get('report_xlsx_b64')
                 if xlsx_b64:
                     try:
-                        xlsx_path = os.path.join(out_dir, f"选品分析数据-{safe_cat}{site}站-{trace_id}.xlsx")
+                        xlsx_path = os.path.join(sub_dir, '选品数据.xlsx')
                         with open(xlsx_path, 'wb') as f:
                             f.write(base64.b64decode(xlsx_b64))
-                        xlsx_note = f" + {os.path.basename(xlsx_path)}"
+                        xlsx_note = ' + 选品数据.xlsx'
                     except Exception as e:
                         print(f'⚠️ 源数据表格保存失败: {e}', file=sys.stderr)
+                _save_profile(payload)   # 画像落盘(下次免重填)
                 est = '利润由选品雷达估算' if meta.get('estimated_profit') else '利润由用户提供'
-                print(f'✅ [天眼 v3.3] 已存 {md_path}{xlsx_note} | 本次 ID: {trace_id} | 倾向 {result.get("tendency")} | 可信度 {result.get("confidence")} | {est}', file=sys.stderr)
+                print(f'✅ [天眼 v3.3] 已存到 {sub_dir}/ (选品报告.md{xlsx_note}) | 本次 ID: {trace_id} | 倾向 {result.get("tendency")} | 可信度 {result.get("confidence")} | {est}', file=sys.stderr)
             sys.exit(0)
     except urllib.error.HTTPError as e:
         detail = ''
