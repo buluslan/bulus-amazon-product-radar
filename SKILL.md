@@ -38,6 +38,19 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 
 > 连接配置优先级:环境变量 `RADAR_ENDPOINT` / `RADAR_API_KEY` > skill 文件夹/`.env`(install 写入)> 内置默认。详见 README。
 
+## 查询额度
+
+用户说「我还剩多少额度」「还能用几次」「查 quota」「用了多少次」「我额度用完没」等时:
+
+1. 确认 `~/.claude/skills/bulus-amazon-product-radar/.env` 里有 `RADAR_API_KEY` + `RADAR_ENDPOINT`(无则引导走「先安装 skill」流程,不报错)
+2. 调 `python3 scripts/check_quota.py`(脚本读 .env + GET `$RADAR_ENDPOINT/v1/天眼/quota`,Authorization: Bearer `$RADAR_API_KEY`)
+3. 大白话回:
+   - 还有 X 次(Y 已用 / Z 总额),到期 M 月 D 日,状态 [可用/已用完/已过期]
+   - paid_credits>0 时提一句「另有付费额度 N」
+   - 用完 → 「用完联系管理员加额度(微信 bulus_lan)」
+
+不消耗 quota、不写报告、不动对话。
+
 1. **问品类**:**细分品类名** 或 **具体 ASIN** + 站点。
    - **颗粒度**:给到亚马逊的**细分品类(三级/叶子级)**——能直接搜出对应类目页的名字(如"自动猫砂盆"✅)。❌ 一二级太宽("宠物用品"/"电子产品"数据泛没参考);❌ 比叶子更细("某品牌某型号"太窄)。拿不准就给个大致品类,后台帮你定位细分。
    - **可以给两种**:**细分品类名**(自动猫砂盆 / 无线蓝牙音响 / 瑜伽裤 / 空气净化器 / 咖啡磨豆机)或 **具体 ASIN**(如 B0BSHF7WHW,后台自动反推它所属的类目再分析)
