@@ -55,7 +55,7 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
    - **颗粒度**:给到亚马逊的**细分品类(三级/叶子级)**——能直接搜出对应类目页的名字(如"自动猫砂盆"✅)。❌ 一二级太宽("宠物用品"/"电子产品"数据泛没参考);❌ 比叶子更细("某品牌某型号"太窄)。拿不准就给个大致品类,后台帮你定位细分。
    - **可以给两种**:**细分品类名**(自动猫砂盆 / 无线蓝牙音响 / 瑜伽裤 / 空气净化器 / 咖啡磨豆机)或 **具体 ASIN**(如 B0BSHF7WHW,后台自动反推它所属的类目再分析)
    - **站点**:US(美国)/ GB(英国)/ DE(德国)/ FR(法国)/ JP(日本)/ CA(加拿大)/ AU(澳大利亚)/ IT(意大利)/ ES(西班牙)/ MX(墨西哥)/ BR(巴西)/ IN(印度)/ AE(阿联酋)/ SA(沙特)
-   - 品类名 / ASIN 有歧义时让你确认
+   - **品类名→确认 nodeId**(关键,防类目认错):用户给**品类名**时,先调 `python3 scripts/resolve_category.py "<品类名>" --site <站点>` 拿候选类目(成品优先排)→ 念 top1:"系统定位到细分品类 **{top1 名字}**,对吗?"→ 确认就拿它的 nodeId;否定就念前 5 个候选让用户选 → 拿到 nodeId 写进 `payload.target.nodeId`。**给 ASIN 时跳过这步**(后台反推类目,确定性不会错)
 2. **问你的情况 + 预算 + 其他补充**(画像缓存:先读上次画像,命中则确认/更新,未命中才从头问):
    - **先读画像缓存**:Read skill 文件夹下 `.flow_state/seller_profile.json`(call_radar 提交后自动写入上次画像,字段:experience/category_relation/capital/budget_cny/supply_chain/business_model/user_overrides)。
      - **命中**(文件存在且有 experience 等字段):告诉用户"检测到上次的画像(经验XX / 资金XX / 模式XX / 货源XX),这次有变化吗?要更新哪几项?" → 用户说没变就直接用、说改哪项就只改那项 → 进步骤 3。
@@ -76,7 +76,7 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 
 ```json
 {
-  "target": {"categoryName": "自动猫砂盆", "site": "US"},
+  "target": {"categoryName": "自动猫砂盆", "nodeId": "17602464011", "site": "US"},
   "profile": {"experience": "进阶", "category_relation": "工厂", "capital": "30万", "supply_chain": "1688贸易商", "business_model": "精品"},
   "budget_cny": 300000,
   "user_overrides": {}
@@ -85,7 +85,7 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 
 | 字段 | 含义 |
 |---|---|
-| `target` | 品类名 或 ASIN + 站点(给 ASIN 时后台反推类目) |
+| `target` | 品类名+`nodeId`(确认环节拿到) 或 ASIN + 站点(给 ASIN 时后台反推类目) |
 | `profile` | 你的情况(运营经验 / 品类关系 / 资金 / 供应链 / 经营模式) |
 | `budget_cny` | 可投入资金(首批货款+头程+推广+仓储的总预算,元) |
 | `user_overrides` | 实测数据(转化率 / 退货率 / 出厂价);没有就空 `{}`,自动估算 |
@@ -133,6 +133,7 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 | 报告编号的内部字段名 | 「本次报告编号」 |
 | ① ② ③ ④ ⑤(内部编号) | 「从五个方面分析」 |
 | 接口 / 服务端 / 系统估算 | 「自动估算」 |
+| resolve_category.py / nodeId / 候选类目 | 「帮你定位到细分品类 / 是 XXX 吗」 |
 
 原则:对话发出即定,无法事后改,开口就用大白话;内部执行细节(脚本名 / 字段名 / 接口)只在后台跑,流向用户(对话 + 报告)必须翻译。
 

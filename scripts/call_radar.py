@@ -4,7 +4,7 @@
 工作流:读 payload.json → 调用判断接口 → 输出成品报告 markdown。
 
 payload.json 结构(由本脚本与用户交互组装):
-  target: {categoryName, site}         品类名 + 站点
+  target: {categoryName, nodeId, site}  品类名+nodeId(resolve_category 确认拿到)+ 站点;给 ASIN 时 {asin, site}(后台反推类目)
   profile: {experience, category_relation, capital}
   budget_cny: 选品预算(元)
   user_overrides: {} 或 {cvr,return_rate,purchase,...}  选填实测(没有就空,系统估算)
