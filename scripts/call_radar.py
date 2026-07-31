@@ -17,7 +17,7 @@ payload.json 结构(由本脚本与用户交互组装):
 
 配置(优先级从高到低,任一档有值即用):
   环境变量 RADAR_ENDPOINT / RADAR_API_KEY   临时覆盖
-  skill 文件夹/.env 里的连接地址和 key       install.sh 写入(默认)
+  skill 文件夹/.env 里的连接地址和 key       cp .env.example 写入(默认)
   内置默认
 
 成功时输出报告 markdown;状态/错误信息输出到标准错误流。

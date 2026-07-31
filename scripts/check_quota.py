@@ -111,7 +111,7 @@ def main():
 
     api_key = args.api_key or _get_api_key()
     if api_key == 'your-api-key' or not api_key:
-        print('❌ 没找到 API key。请先安装 skill(install.sh),或检查 ~/.claude/skills/bulus-amazon-product-radar/.env 里的 RADAR_API_KEY。', file=sys.stderr)
+        print('❌ 没找到 API key。请先配置 .env(cp .env.example 填 key),或检查 ~/.claude/skills/bulus-amazon-product-radar/.env 里的 RADAR_API_KEY。', file=sys.stderr)
         sys.exit(1)
 
     endpoint = args.endpoint or _get_endpoint()

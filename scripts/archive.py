@@ -11,7 +11,7 @@
 
 配置(优先级,同 call_radar.py):
   环境变量 RADAR_ENDPOINT / RADAR_API_KEY            临时覆盖
-  skill 文件夹/.env 里的连接地址和 key               install.sh 写入(默认)
+  skill 文件夹/.env 里的连接地址和 key               cp .env.example 写入(默认)
   内置默认
 
 成功打印归档编号;失败退出码 1。不编造结果。

@@ -32,17 +32,15 @@ description: "判断一个亚马逊产品或细分品类值不值得做、适不
 
 **先检测连接(进对话前)**:读 skill 文件夹下的 `.env`(看 `RADAR_ENDPOINT` + `RADAR_API_KEY` 在不在):
 - 都在 → 直接进步骤 1 问品类。
-- 缺失 → 引导用户配置(**两个选择,都别让用户把 key 发在对话里**——key 敏感会进历史):
-  - **手动**(推荐,透明):让用户在 skill 文件夹下 `cp .env.example .env`,用编辑器打开 `.env` 填 `RADAR_API_KEY`(endpoint 已预填)。填完存盘告诉你继续。
-  - **一键**:让用户在自己终端跑 `curl -sSL http://106.55.230.27:8000/install.sh | bash -s -- --api-key=<key>`(key 找管理员 buluslan 要;命令在用户终端跑,不发对话)。
+- 缺失 → 引导用户配置(**别让用户把 key 发在对话里**——key 敏感会进历史):让用户在 skill 文件夹下 `cp .env.example .env`,用编辑器打开 `.env` 填 `RADAR_API_KEY`(endpoint 已预填)。填完存盘告诉你继续。(若 skill 文件夹里没有 `.env.example`,说明仓库还没 clone,先指引 clone——见 README 安装段。)
 
-> 连接配置优先级:环境变量 `RADAR_ENDPOINT` / `RADAR_API_KEY` > skill 文件夹/`.env`(install 写入)> 内置默认。详见 README。
+> 连接配置优先级:环境变量 `RADAR_ENDPOINT` / `RADAR_API_KEY` > skill 文件夹/`.env`(`cp .env.example` 生成)> 内置默认。详见 README。
 
 ## 查询额度
 
 用户说「我还剩多少额度」「还能用几次」「查 quota」「用了多少次」「我额度用完没」等时:
 
-1. 确认 `~/.claude/skills/bulus-amazon-product-radar/.env` 里有 `RADAR_API_KEY` + `RADAR_ENDPOINT`(无则引导走「先安装 skill」流程,不报错)
+1. 确认 `~/.claude/skills/bulus-amazon-product-radar/.env` 里有 `RADAR_API_KEY` + `RADAR_ENDPOINT`(无则引导配置 .env:`cp .env.example` 填 key,不报错)
 2. 调 `python3 scripts/check_quota.py`(脚本读 .env + GET `$RADAR_ENDPOINT/v1/天眼/quota`,Authorization: Bearer `$RADAR_API_KEY`)
 3. 大白话回:
    - 还有 X 次(Y 已用 / Z 总额),到期 M 月 D 日,状态 [可用/已用完/已过期]

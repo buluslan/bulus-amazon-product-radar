@@ -88,20 +88,14 @@
 
 ### 你需要先联系我们获取
 - **API key**(以 `sk_t_` 开头)
-- **服务地址**(以 `http://` 开头)
+
+> 服务地址已预填在配置模板里,不用单独要。
 
 ### 步骤(Agent 执行)
 
-**方式 A · 一键安装**(推荐,自动 clone + 配置 .codex/.agents 软链):
-
-```bash
-curl -sSL http://106.55.230.27:8000/install.sh | bash -s -- --api-key=<你的key>
-```
-
-**方式 B · 手动**(透明,自己填 key):
-
 ```bash
 # 1. clone 到你 Agent 的技能目录(目录名必须是 bulus-amazon-product-radar)
+#    Claude Code → ~/.claude/skills/    Codex → ~/.codex/skills/
 git clone https://github.com/buluslan/bulus-amazon-product-radar.git ~/.claude/skills/bulus-amazon-product-radar
 # 2. 复制配置模板 + 填 key
 cd ~/.claude/skills/bulus-amazon-product-radar
