@@ -24,3 +24,7 @@ __pycache__/
 !.env.example
 reports/
 .conversation-*.md
+
+# A-lite 端到端测试临时文件(不进git)
+.env.e2e
+payload_e2e.json
