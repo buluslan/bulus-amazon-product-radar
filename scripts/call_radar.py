@@ -117,6 +117,12 @@ def main():
     # 调研参数由接口默认,无需用户指定
     payload.setdefault('user_overrides', {})
 
+    # 幂等键(配合服务端去重,防 agent 连环重试各扣一次额度):同品类同站点 5 分钟窗口内复用同一键
+    import time as _time
+    _tgt = payload.get('target') or {}
+    _window = int(_time.time() // 300)  # 5 分钟窗口
+    payload['idempotency_key'] = f"{_tgt.get('categoryName','')}_{_tgt.get('asin','')}_{_tgt.get('site','')}_{_window}"
+
     body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     req = urllib.request.Request(ENDPOINT, data=body, method='POST')
     req.add_header('Authorization', f'Bearer {API_KEY}')
@@ -175,13 +181,13 @@ def main():
     except urllib.error.URLError as e:
         reason = str(e.reason)
         if 'timeout' in reason.lower() or 'timed out' in reason.lower():
-            print(f'❌ [天眼 v3.3] 判断超时(数据量大),建议稍后重试: {reason}', file=sys.stderr)
+            print(f'❌ [天眼 v3.3] 判断超时(数据量大,单次需3-6分钟)。请勿立即重试(会重复扣额度),如需重试请确认后手动提交: {reason}', file=sys.stderr)
         else:
             print(f'❌ [天眼 v3.3] 连接选品雷达失败(请确认服务已启动、地址配置正确): {reason}', file=sys.stderr)
     except Exception as e:
         print(f'❌ [天眼 v3.3] 判断遇到未知问题({type(e).__name__}): {str(e)[:200]}', file=sys.stderr)
 
-    print('→ 选品雷达暂时无法响应,请稍后重试', file=sys.stderr)
+    print('→ 选品雷达暂时无法响应。请勿立即重试(避免重复扣额度),联系客服 buluslan 凭报告编号处理,或确认后手动重试', file=sys.stderr)
     sys.exit(1)
 
 
