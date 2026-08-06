@@ -255,9 +255,11 @@ def main():
         else:
             print(f'❌ [天眼 v3.4] 判断失败 HTTP {e.code}: {detail}', file=sys.stderr)
         sys.exit(1)
-    except urllib.error.URLError as e:
-        reason = str(e.reason)
-        if 'timeout' in reason.lower() or 'timed out' in reason.lower():
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        # socket.timeout/TimeoutError 不被 URLError 抓(urlopen timeout 在 py3.10+ 抛 TimeoutError),需显式
+        reason = str(getattr(e, 'reason', e))
+        msg = (reason + ' ' + str(e)).lower()
+        if 'timeout' in msg or 'timed out' in msg:
             # A-lite:30s deadline 到 = 服务端还在跑(正常,单次需 3-6 分钟)→ 优雅退出转 poll,不报错
             _prompt_poll(trace_id, f'分析仍在进行(已等 {TIMEOUT}s)')
         else:
